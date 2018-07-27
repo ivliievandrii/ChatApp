@@ -1,0 +1,30 @@
+﻿@model ChatApplication.ViewModels.ChatViewModel
+
+@{var users = Model.Users.Where(u => u.Online == true).ToList();}
+@{var messages = Model.Messages.ToList();}
+
+<div id="users">
+    <p><b>Online: @users.Count</b></p>
+    @foreach (var user in users)
+    {
+        <p>@user.Login</p>
+    }
+</div>
+<div id="messages">
+    @foreach (var msg in messages)
+    {
+        <p>
+            @msg.PostTime<br />
+            @if (msg.User != null)
+            {
+                <b>@(msg.User.Login + ":")</b> @msg.Text
+            }
+            else
+            {
+                <u>@msg.Text</u>
+            }
+        </p>
+    }    
+</div>
+
+

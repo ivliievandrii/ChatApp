@@ -1,0 +1,25 @@
+﻿@model ChatApplication.ViewModels.ChatViewModel
+
+<div id="refreshArea">
+    @{
+        Layout = null;
+        Html.RenderPartial("History", Model);
+    }
+</div>
+
+@Ajax.ActionLink("ActionLink", "Index", new { userLogin = "", userEmail = "", logon = "", logoff = "", message = "" },
+new AjaxOptions { UpdateTargetId = "refreshArea", OnSuccess = "ChatOnSuccess", OnFailure = "ChatOnFailure" },
+new { @id = "sendQuitLink", @style = "visibility:hidden;" })
+
+<div id="inputForm">
+    <table>
+        <tr>
+            <td rowspan="3"><textarea id="textMessage" rows="4" cols="54"></textarea></td>
+            <td><button id="sendMessagebtn">Send</button></td>
+        </tr>
+        <tr>
+            <td><button id="logoffbtn">Logoff</button></td>
+        </tr>
+    </table>
+</div>
+

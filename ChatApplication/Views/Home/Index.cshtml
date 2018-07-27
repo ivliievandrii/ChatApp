@@ -1,0 +1,34 @@
+﻿@model ChatApplication.ViewModels.ChatViewModel
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Chat page</title>
+    @Styles.Render("~/Content/Site.css")
+</head>
+<body>
+    <p></p>
+    <div id="error"></div>
+    <div id="loginTab"></div><div id="login"></div>
+    <div id="email"></div>
+    <div id="container">
+        <div id="loginBlock">
+            <p>Enter your login and email</p>
+            <input type="text" id="txtUserName" placeholder="Your login" /><br />
+            <input type="text" id="txtUserEmail" placeholder="Your email" /><br />
+            <button id="btnLogin">Enter chat</button><br />
+        </div>
+    </div>
+    @Ajax.ActionLink("Login", "Index", new { userLogin = "", userEmail = "" },
+    new AjaxOptions { UpdateTargetId = "container", OnFailure = "LoginOnFailure", OnSuccess = "LoginOnSuccess"},
+    new { @id = "loginButton", @style = "visibility:hidden;" })
+
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/scripts/jquery.unobtrusive-ajax.min.js")
+    @Scripts.Render("~/Scripts/chat.js")
+</body>
+</html>
