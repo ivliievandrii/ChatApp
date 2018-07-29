@@ -1,5 +1,5 @@
-﻿//setting a link after user entered login/email and clicked a button
-
+﻿
+//setting a link after user entered login/email and clicked a button
 $(document).ready(function () {
 
     $("#btnLogin").click(function () {
@@ -8,7 +8,7 @@ $(document).ready(function () {
 
         if (userLogin && userEmail) {
             //setting a link with paramethers for request to Index through AJAX
-            var href = "/Home?userLogin=" + encodeURIComponent(userLogin);
+            var href = "/Home/Logon?userLogin=" + encodeURIComponent(userLogin);
             href += "&userEmail=" + encodeURIComponent(userEmail);
             href += "&logon=true";
             //adding new query link to ajax-actionlink on login page
@@ -36,7 +36,7 @@ function LoginOnSuccess(data) {
 
         if (message) {
             //add message parameter to Index action method. Adding users login from the above div
-            var href = "/Home?userLogin=" + encodeURIComponent($("#login").text());
+            var href = "/Home/SendMessages?userLogin=" + encodeURIComponent($("#login").text());
             href += "&&userEmail=" + encodeURIComponent($("#email").text());
             href += "&message=" + encodeURIComponent(message);
             $("#sendQuitLink").attr("href", href).click();
@@ -47,7 +47,7 @@ function LoginOnSuccess(data) {
     //quit-chat-button handler
     $("#logoffbtn").click(function () {
 
-        var href = "/Home?userLogin=" + encodeURIComponent($("#login").text());
+        var href = "/Home/Logoff?userLogin=" + encodeURIComponent($("#login").text());
         href += "&&userEmail=" + encodeURIComponent($("#email").text());
         href += "&logoff=true";
         $("#loginTab").empty();
@@ -58,7 +58,7 @@ function LoginOnSuccess(data) {
 
 //refreshing chat
 function Refresh() {
-    var href = "/Home?userLogin=" + encodeURIComponent($("#login").text());
+    var href = "/Home/SendMessages?userLogin=" + encodeURIComponent($("#login").text());
     href += "&&userEmail=" + encodeURIComponent($("#email").text());
     $("#sendQuitLink").attr("href", href).click();
     setTimeout("Refresh();", 2000);

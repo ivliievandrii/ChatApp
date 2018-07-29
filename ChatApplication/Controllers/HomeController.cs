@@ -16,110 +16,135 @@ namespace ChatApplication.Controllers
         // viewmodel to pass users/messages arrays as one object to views
         private ChatViewModel viewModel;
 
-        public ActionResult Index(string userLogin, string userEmail, bool? logon, bool? logoff, string message)
+        public ActionResult Index()
         {
             try
             {
-                // determines request made using ajax/jquery or not
-                if (!Request.IsAjaxRequest())
+                viewModel = new ChatViewModel()
                 {
-                    viewModel = new ChatViewModel()
-                    {
-                        Messages = db.Messages.ToList(),
-                        Users = db.Users.ToList()
-                    };
-                    return View(viewModel);
-                }
-                // determines if user is about to quit
-                else if (logoff != null && (bool)logoff)
+                    Messages = db.Messages.ToList(),
+                    Users = db.Users.ToList()
+                };
+                return View(viewModel);
+            }
+            catch (Exception ex)
+            {
+                Response.StatusCode = 500;
+                return Content(ex.Message);
+            }
+        }
+
+        //determines if user is about to enter chat
+        public ActionResult Logon(string userLogin, string userEmail, bool logon)
+        {            
+            try
+            {
+                var users = db.Users.ToList();
+                int usersOnline = users.Where(u => u.Online == true).ToList().Count;
+                if (usersOnline >= 10)
                 {
-                    ChatUser user = db.Users.FirstOrDefault(u => (u.Login == userLogin) && (u.Email == userEmail));
-                    user.Online = false;
-                    db.Messages.Add(new ChatMessage()
-                    {
-                        Text = user.Login + " has left chat",
-                        User = user,
-                        PostTime = DateTime.Now
-                    });
-                    db.Entry<ChatUser>(user).State = EntityState.Modified;
-                    db.SaveChanges();
-                    viewModel = new ChatViewModel()
-                    {
-                        Messages = db.Messages.ToList(),
-                        Users = db.Users.ToList()
-                    };
-                    return PartialView("ChatBox", viewModel);
+                    throw new Exception("Chat is full");
                 }
-                // determines if user is about to enter chat
-                else if (logon != null && (bool)logon)
+                else if (users.FirstOrDefault(u => (u.Login == userLogin) && (u.Email == userEmail)) != null)
                 {
-                    var users = db.Users.ToList();
-                    int usersOnline = users.Where(u => u.Online == true).ToList().Count;
-                    if (usersOnline >= 10)
-                    {
-                        throw new Exception("Chat is full");
-                    }
-                    else if (users.FirstOrDefault(u => (u.Login == userLogin) && (u.Email == userEmail)) != null)
-                    {
-                        throw new Exception("User with such login and email already exists. Choose another login/email");
-                    }
-                    else if (users.FirstOrDefault(u => u.Login == userLogin) != null)
-                    {
-                        throw new Exception("User with such login already exists. Choose another login");
-                    }
-                    // checking for user with the same email
-                    else if (users.FirstOrDefault(u => u.Email == userEmail) != null)
-                    {
-                        throw new Exception("User with such email already exists. Choose another email");
-                    }
-                    // adding user to chat
-                    else
-                    {
-                        ChatUser newUser = new ChatUser()
-                        {
-                            Login = userLogin,
-                            Email = userEmail,
-                            LoginTime = DateTime.Now,
-                            Online = true
-                        };
-                        db.Messages.Add(new ChatMessage()
-                        {
-                            Text = userLogin + " entered the chat",
-                            User = newUser,
-                            PostTime = DateTime.Now
-                        });
-                        db.Users.Add(newUser);
-                        db.SaveChanges();
-                    }
-                    viewModel = new ChatViewModel()
-                    {
-                        Messages = db.Messages.ToList(),
-                        Users = db.Users.ToList()
-                    };
-                    return PartialView("ChatBox", viewModel);
+                    throw new Exception("User with such login and email already exists. Choose another login/email");
                 }
-                // adding new message to chat
+                else if (users.FirstOrDefault(u => u.Login == userLogin) != null)
+                {
+                    throw new Exception("User with such login already exists. Choose another login");
+                }
+
+                else if (users.FirstOrDefault(u => u.Email == userEmail) != null)
+                {
+                    throw new Exception("User with such email already exists. Choose another email");
+                }
+                // adding user to chat
                 else
                 {
-                    if (!string.IsNullOrEmpty(message))
+                    ChatUser newUser = new ChatUser()
                     {
-                        var currentUser = db.Users.FirstOrDefault
-                        (u => (u.Login == userLogin) && (u.Email == userEmail));
-                        db.Messages.Add(new ChatMessage()
-                        {
-                            User = currentUser,
-                            Text = message,
-                            PostTime = DateTime.Now
-                        });
-                        db.SaveChanges();
-                    }
-                    viewModel = new ChatViewModel()
-                    {
-                        Messages = db.Messages.ToList(),
-                        Users = db.Users.ToList()
+                        Login = userLogin,
+                        Email = userEmail,
+                        LoginTime = DateTime.Now,
+                        Online = true
                     };
-                    return PartialView("History", viewModel);
+                    db.Messages.Add(new ChatMessage()
+                    {
+                        Text = userLogin + " entered the chat",
+                        User = newUser,
+                        PostTime = DateTime.Now
+                    });
+                    db.Users.Add(newUser);
+                    db.SaveChanges();
                 }
+                viewModel = new ChatViewModel()
+                {
+                    Messages = db.Messages.ToList(),
+                    Users = db.Users.ToList()
+                };
+                return PartialView("ChatBox", viewModel);
+            }
+            catch (Exception ex)
+            {
+                Response.StatusCode = 500;
+                return Content(ex.Message);
+            }
+        }
+
+        //determines if user is about to quit chat
+        public ActionResult Logoff(string userLogin, string userEmail, bool logoff)
+        {
+            try
+            {
+                ChatUser user = db.Users.FirstOrDefault(u => (u.Login == userLogin) && (u.Email == userEmail));
+                user.Online = false;
+                db.Messages.Add(new ChatMessage()
+                {
+                    Text = user.Login + " has left chat",
+                    User = user,
+                    PostTime = DateTime.Now
+                });
+                db.Entry<ChatUser>(user).State = EntityState.Modified;
+                db.SaveChanges();
+                viewModel = new ChatViewModel()
+                {
+                    Messages = db.Messages.ToList(),
+                    Users = db.Users.ToList()
+                };
+                return PartialView("ChatBox", viewModel);
+            }
+            catch (Exception ex)
+            {
+                Response.StatusCode = 500;
+                return Content(ex.Message);
+            }
+        }
+
+        //adding messages or refreshing chat
+        public ActionResult SendMessages(string userLogin, string userEmail, string message)
+        {
+            try
+            {
+                // adding new message
+                if (!string.IsNullOrEmpty(message))
+                {
+                    var currentUser = db.Users.FirstOrDefault
+                    (u => (u.Login == userLogin) && (u.Email == userEmail));
+                    db.Messages.Add(new ChatMessage()
+                    {
+                        User = currentUser,
+                        Text = message,
+                        PostTime = DateTime.Now
+                    });
+                    db.SaveChanges();
+                }
+                // refreshing chat
+                viewModel = new ChatViewModel()
+                {
+                    Messages = db.Messages.ToList(),
+                    Users = db.Users.ToList()
+                };
+                return PartialView("History", viewModel);
             }
             catch (Exception ex)
             {
